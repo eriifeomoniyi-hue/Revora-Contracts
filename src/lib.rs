@@ -4062,10 +4062,6 @@ impl RevoraRevenueShare {
                 royalty_amount,
             ),
         );
-        env.events().publish(
-            (EVENT_ROYALTY_PAID, issuer, namespace, token),
-            (payer, seller, buyer, payment_asset, amount, royalty_amount),
-        );
 
         Ok(royalty_amount)
     }
@@ -4166,10 +4162,6 @@ impl RevoraRevenueShare {
                 payment_amount,
                 royalty_amount,
             ),
-        );
-        env.events().publish(
-            (EVENT_SWAP_V1, issuer, namespace, token),
-            (seller, buyer, amount_bps, payment_asset, payment_amount, royalty_amount),
         );
 
         Ok(())
@@ -5336,20 +5328,6 @@ impl RevoraRevenueShare {
             env.storage().persistent().set(&cap_key, &supply_cap);
         }
 
-        // Primary registration event - denomination metadata included so indexers never
-        // need a second call to learn display semantics.
-        Self::emit_v2_event(
-            &env,
-            (EVENT_OFFER_REG_V2, primary_issuer.clone(), namespace.clone()),
-            (
-                token.clone(),
-                revenue_share_bps,
-                payout_asset.clone(),
-                denomination_symbol.clone(),
-                display_decimals,
-            ),
-        );
-
         env.events().publish(
             (
                 EVENT_INDEXED_V2,
@@ -5373,6 +5351,7 @@ impl RevoraRevenueShare {
         }
         // Versioned v2 event: always emitted (#RC26Q2-C31).
         // Payload: (token, revenue_share_bps, payout_asset, denomination_symbol, display_decimals)
+        // Topic: (ofr_reg2, issuer, namespace, token) — 4-element topic
         Self::emit_v2_event(
             &env,
             (EVENT_OFFER_REG_V2, primary_issuer, namespace, token.clone()),
@@ -6256,10 +6235,6 @@ impl RevoraRevenueShare {
             env.events().publish(
                 (EVENT_REV_INIA_V1, issuer.clone(), namespace.clone(), token.clone()),
                 (EVENT_SCHEMA_VERSION, payout_asset.clone(), amount, period_id, blacklist.clone()),
-            );
-            env.events().publish(
-                (EVENT_REV_REP_V2, issuer.clone(), namespace.clone(), token.clone()),
-                (EVENT_SCHEMA_VERSION, amount, period_id, blacklist.clone()),
             );
             env.events().publish(
                 (EVENT_REV_REPA_V1, issuer, namespace, token),
@@ -10277,15 +10252,6 @@ impl RevoraRevenueShare {
                 offering_id.token.clone(),
             ),
             (holder.clone(), total_payout, claimed_periods.clone()),
-        );
-        env.events().publish(
-            (
-                EVENT_CLAIM_V2,
-                offering_id.issuer.clone(),
-                offering_id.namespace.clone(),
-                offering_id.token.clone(),
-            ),
-            (holder, total_payout, claimed_periods),
         );
         env.events().publish(
             (
